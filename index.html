@@ -15,7 +15,7 @@ button{border:0;border-radius:13px;padding:14px 20px;font-size:16px;font-weight:
 .badges{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:22px 0}.badge{background:#f1f2f8;padding:8px 12px;border-radius:999px;font-size:13px;color:#4b5565}
 .hidden{display:none}.top{display:flex;justify-content:space-between;color:var(--muted);font-size:14px;font-weight:700}.bar{height:9px;background:#edf0f5;border-radius:99px;margin:12px 0 28px;overflow:hidden}.fill{height:100%;background:var(--accent);width:0;transition:.3s}
 .question{font-size:25px;font-weight:800;line-height:1.25;margin:10px 0 22px}.options{display:grid;gap:12px}.option{text-align:left;background:#fff;border:2px solid var(--line);width:100%;display:flex;align-items:center;gap:12px}.option:hover{border-color:#aaa2ef;background:#faf9ff}.letter{width:34px;height:34px;border-radius:10px;background:#f0efff;display:grid;place-items:center;color:var(--accent);flex:none}.next{width:100%;margin-top:20px;background:var(--ink);color:#fff;display:none}
-.result{text-align:center}.score{font-size:64px;font-weight:900;color:var(--accent);margin:8px 0}.meter{height:18px;background:#edf0f5;border-radius:99px;overflow:hidden;margin:20px 0}.meter span{display:block;height:100%;background:var(--accent);width:0}.result h2{font-size:30px;margin:15px 0 8px}.result p{color:var(--muted);line-height:1.6}.tips{background:#f7f8fc;border-radius:16px;padding:18px;text-align:left;margin:20px 0}.actions{display:grid;gap:10px;margin-top:20px}.fine{font-size:12px;color:#8a93a5;text-align:center;margin-top:18px;line-height:1.5}
+.result{text-align:center}.result-card{background:linear-gradient(160deg,#fbfbff,#f2f0ff);border:1px solid #ddd9ff;border-radius:22px;padding:26px 22px}.court{font-size:13px;font-weight:900;letter-spacing:.12em;color:var(--accent)}.result-icon{font-size:58px;margin:14px 0 4px}.small-title{font-size:12px;font-weight:800;letter-spacing:.12em;color:#7a8497}.result h1{font-size:26px;margin:8px 0}.score{font-size:72px;font-weight:900;color:var(--accent);margin:2px 0;line-height:1}.score small{font-size:25px;color:#8a93a5}.meter{height:18px;background:#e5e7ef;border-radius:99px;overflow:hidden;margin:20px 0 14px}.meter span{display:block;height:100%;background:var(--accent);width:0;transition:width 1s ease}.level-pill{display:inline-block;padding:10px 18px;border-radius:999px;background:var(--accent);color:white;font-size:18px;font-weight:900}.result p{color:var(--muted);line-height:1.6}.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.stats div{background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px}.stats b{display:block;font-size:22px;color:var(--ink)}.stats span{font-size:12px;color:var(--muted)}.tips{background:#fff;border-radius:16px;padding:18px;text-align:left;margin:18px 0;border:1px solid var(--line)}.challenge{background:#172033;color:white;border-radius:16px;padding:16px;font-weight:700;line-height:1.5}.actions{display:grid;gap:10px;margin-top:20px}.fine{font-size:12px;color:#8a93a5;text-align:center;margin-top:18px;line-height:1.5}
 .footer{text-align:center;color:#8a93a5;font-size:12px;margin-top:18px}
 </style>
 </head>
@@ -40,18 +40,28 @@ button{border:0;border-radius:13px;padding:14px 20px;font-size:16px;font-weight:
 </section>
 
 <section id="result" class="card hidden result">
-<div style="font-size:48px" id="emoji">🏆</div>
-<h1 style="font-size:34px">THE VERDICT IS IN</h1>
-<div class="score"><span id="finalScore">0</span>/40</div>
-<div class="meter"><span id="meter"></span></div>
-<h2 id="verdict"></h2>
-<p id="description"></p>
-<div class="tips" id="tips"></div>
+<div class="result-card" id="resultCard">
+  <div class="court">⚖️ HR COURTROOM</div>
+  <div class="result-icon" id="emoji">🏆</div>
+  <div class="small-title">THE VERDICT IS IN</div>
+  <h1 id="resultTitle">YOUR EMPLOYEE LEVEL</h1>
+  <div class="score"><span id="finalScore">0</span><small>/40</small></div>
+  <div class="meter"><span id="meter"></span></div>
+  <div class="level-pill" id="verdict"></div>
+  <p id="description"></p>
+  <div class="stats">
+    <div><b id="percentage">0%</b><span>Overall score</span></div>
+    <div><b id="levelNumber">—</b><span>Your level</span></div>
+  </div>
+  <div class="tips" id="tips"></div>
+  <div class="challenge" id="challenge"></div>
+</div>
 <div class="actions">
 <button class="primary" onclick="shareResult()">🔗 SHARE MY RESULT</button>
+<button class="secondary" onclick="downloadCard()">📸 SAVE RESULT CARD</button>
 <button class="secondary" onclick="restart()">🔄 TAKE THE QUIZ AGAIN</button>
 </div>
-<p class="fine">Sharing your result is optional. No answers are sent to a server by this page.</p>
+<p class="fine">Sharing is optional. This quiz runs in your browser; no answers are sent to a server.</p>
 </section>
 <div class="footer">HR Courtroom • Created as an interactive workplace game</div>
 </div>
@@ -102,19 +112,28 @@ function nextQuestion(){
 function showResult(){
  document.getElementById("quiz").classList.add("hidden");document.getElementById("result").classList.remove("hidden");
  document.getElementById("finalScore").textContent=score;
+ document.getElementById("percentage").textContent=Math.round(score/40*100)+"%";
  document.getElementById("meter").style.width=(score/40*100)+"%";
- let v,e,d,t;
- if(score<=19){v="NEEDS IMPROVEMENT";e="🔴";d="There are a few workplace habits you could strengthen. The good news: small, consistent changes can make a noticeable difference.";t="<b>Your challenge:</b><br>Choose one habit from the quiz and improve it over the next 30 days."}
- else if(score<=27){v="AVERAGE PERFORMER";e="🟠";d="You have a solid foundation, but there is room to become more proactive, consistent and ownership-driven.";t="<b>Your challenge:</b><br>Move one answer from 'average' to 'good' and build the habit."}
- else if(score<=34){v="GOOD PERFORMER";e="🟢";d="You demonstrate dependable workplace habits and a positive approach to responsibility, teamwork and learning.";t="<b>Your challenge:</b><br>Focus on initiative—look for ways to create value beyond your assigned tasks."}
- else{v="OUTSTANDING PERFORMER";e="🏆";d="Your answers suggest strong ownership, reliability, initiative and a growth mindset. Keep the balance between performance and people.";t="<b>Your challenge:</b><br>Help others grow while continuing to raise your own standard."}
- document.getElementById("emoji").textContent=e;document.getElementById("verdict").textContent=v;document.getElementById("description").textContent=d;document.getElementById("tips").innerHTML=t;
+ let v,e,d,t,c,n;
+ if(score<=19){v="NEEDS IMPROVEMENT";e="🔴";n="Level 1";d="A few workplace habits could be strengthened. Small, consistent changes can make a noticeable difference.";t="<b>Your focus areas</b><br>Reliability, accountability and consistency.";c="🎯 NEXT LEVEL: Build one better workplace habit for the next 30 days."}
+ else if(score<=27){v="AVERAGE PERFORMER";e="🟠";n="Level 2";d="You have a solid foundation, with room to become more proactive, consistent and ownership-driven.";t="<b>Your strengths</b><br>You have the basics in place. Now turn good intentions into consistent habits.";c="🎯 NEXT LEVEL: Move one answer from 'average' to 'good'."}
+ else if(score<=34){v="GOOD PERFORMER";e="🟢";n="Level 3";d="You demonstrate dependable workplace habits and a positive approach to responsibility, teamwork and learning.";t="<b>Your strengths</b><br>Reliability, teamwork and a willingness to learn.";c="🎯 NEXT LEVEL: Look for opportunities to create value beyond your assigned tasks."}
+ else{v="OUTSTANDING PERFORMER";e="🏆";n="Level 4";d="Your answers suggest strong ownership, reliability, initiative and a growth mindset.";t="<b>Your strengths</b><br>Ownership, initiative, accountability and continuous learning.";c="🎯 NEXT LEVEL: Raise the standard while helping the people around you grow."}
+ document.getElementById("emoji").textContent=e;document.getElementById("verdict").textContent=v;document.getElementById("description").textContent=d;document.getElementById("tips").innerHTML=t;document.getElementById("challenge").textContent=c;document.getElementById("levelNumber").textContent=n;
 }
 function restart(){current=0;score=0;document.getElementById("result").classList.add("hidden");document.getElementById("quiz").classList.remove("hidden");render();}
 function shareResult(){
- const text=`I scored ${score}/40 in the ⚖️ HR Courtroom Challenge — "${document.getElementById("verdict").textContent}"! What would you score?`;
- if(navigator.share){navigator.share({title:"HR Courtroom Challenge",text:text,url:location.href}).catch(()=>{});}
- else{navigator.clipboard.writeText(text+" "+location.href);alert("Your result text and quiz link have been copied. Paste them into LinkedIn!");}
+ const text=`I scored ${score}/40 in the ⚖️ HR Courtroom Challenge — ${document.getElementById("verdict").textContent}! What would you score?`;
+ const url=location.href;
+ if(navigator.share){navigator.share({title:"HR Courtroom Challenge",text:text,url:url}).catch(()=>{});}
+ else{navigator.clipboard.writeText(text+" "+url);alert("Your result text and quiz link have been copied. Paste them into LinkedIn!");}
+}
+function downloadCard(){
+ const card=document.getElementById("resultCard");
+ const original=card.style.boxShadow;
+ card.style.boxShadow="none";
+ window.print();
+ card.style.boxShadow=original;
 }
 </script>
 </body>
