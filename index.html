@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HR Courtroom | What Type of Employee Are You?</title>
+<style>
+:root{--ink:#172033;--muted:#667085;--bg:#f5f7fb;--card:#fff;--accent:#5b4bdb;--line:#e6e9f0}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:linear-gradient(135deg,#f7f8ff,#eef4ff);color:var(--ink);min-height:100vh}
+.container{max-width:760px;margin:auto;padding:28px 18px 50px}.brand{text-align:center;font-weight:800;letter-spacing:.08em;color:var(--accent);font-size:14px;margin:8px 0 20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:32px;box-shadow:0 16px 45px rgba(30,41,59,.09)}
+h1{font-size:clamp(30px,6vw,48px);line-height:1.05;margin:0 0 14px;text-align:center}.subtitle{text-align:center;color:var(--muted);font-size:17px;line-height:1.5}
+button{border:0;border-radius:13px;padding:14px 20px;font-size:16px;font-weight:700;cursor:pointer}
+.primary{background:var(--accent);color:white;width:100%;margin-top:24px}.secondary{background:#eef0f7;color:var(--ink)}
+.badges{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:22px 0}.badge{background:#f1f2f8;padding:8px 12px;border-radius:999px;font-size:13px;color:#4b5565}
+.hidden{display:none}.top{display:flex;justify-content:space-between;color:var(--muted);font-size:14px;font-weight:700}.bar{height:9px;background:#edf0f5;border-radius:99px;margin:12px 0 28px;overflow:hidden}.fill{height:100%;background:var(--accent);width:0;transition:.3s}
+.question{font-size:25px;font-weight:800;line-height:1.25;margin:10px 0 22px}.options{display:grid;gap:12px}.option{text-align:left;background:#fff;border:2px solid var(--line);width:100%;display:flex;align-items:center;gap:12px}.option:hover{border-color:#aaa2ef;background:#faf9ff}.letter{width:34px;height:34px;border-radius:10px;background:#f0efff;display:grid;place-items:center;color:var(--accent);flex:none}.next{width:100%;margin-top:20px;background:var(--ink);color:#fff;display:none}
+.result{text-align:center}.score{font-size:64px;font-weight:900;color:var(--accent);margin:8px 0}.meter{height:18px;background:#edf0f5;border-radius:99px;overflow:hidden;margin:20px 0}.meter span{display:block;height:100%;background:var(--accent);width:0}.result h2{font-size:30px;margin:15px 0 8px}.result p{color:var(--muted);line-height:1.6}.tips{background:#f7f8fc;border-radius:16px;padding:18px;text-align:left;margin:20px 0}.actions{display:grid;gap:10px;margin-top:20px}.fine{font-size:12px;color:#8a93a5;text-align:center;margin-top:18px;line-height:1.5}
+.footer{text-align:center;color:#8a93a5;font-size:12px;margin-top:18px}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="brand">⚖️ HR COURTROOM</div>
+
+<section id="intro" class="card">
+<h1>What Type of Employee Are You?</h1>
+<p class="subtitle">A fun 10-question workplace self-assessment. Answer honestly. Your final verdict is based on your choices.</p>
+<div class="badges"><span class="badge">10 Questions</span><span class="badge">40 Points</span><span class="badge">2 Minutes</span></div>
+<button class="primary" onclick="startQuiz()">START THE QUIZ →</button>
+<p class="fine">For entertainment and self-reflection only. It is not a formal performance assessment.</p>
+</section>
+
+<section id="quiz" class="card hidden">
+<div class="top"><span id="counter">Question 1 of 10</span><span id="points">0 points</span></div>
+<div class="bar"><div class="fill" id="progress"></div></div>
+<div class="question" id="question"></div>
+<div class="options" id="options"></div>
+<button class="next" id="next" onclick="nextQuestion()">NEXT →</button>
+</section>
+
+<section id="result" class="card hidden result">
+<div style="font-size:48px" id="emoji">🏆</div>
+<h1 style="font-size:34px">THE VERDICT IS IN</h1>
+<div class="score"><span id="finalScore">0</span>/40</div>
+<div class="meter"><span id="meter"></span></div>
+<h2 id="verdict"></h2>
+<p id="description"></p>
+<div class="tips" id="tips"></div>
+<div class="actions">
+<button class="primary" onclick="shareResult()">🔗 SHARE MY RESULT</button>
+<button class="secondary" onclick="restart()">🔄 TAKE THE QUIZ AGAIN</button>
+</div>
+<p class="fine">Sharing your result is optional. No answers are sent to a server by this page.</p>
+</section>
+<div class="footer">HR Courtroom • Created as an interactive workplace game</div>
+</div>
+
+<script>
+const questions=[
+["I usually reach the office…",["Late","On time","A few minutes early","Well before time"]],
+["When I receive a new task, I usually…",["Wait until someone reminds me","Start when the deadline gets closer","Plan and complete it on time","Finish early and look for ways to improve it"]],
+["When I make a mistake, I…",["Try to hide it","Wait until someone notices","Accept it and correct it","Accept it, correct it and learn how to prevent it"]],
+["When I receive constructive feedback, I…",["Take it personally","Listen but don't always act on it","Consider it and improve","Act on it and proactively ask how I can improve further"]],
+["When a colleague needs help, I…",["Avoid getting involved","Help only if I have time","Try to help","Help and make sure they can handle it independently next time"]],
+["My attitude toward learning new skills is…",["I learn only when required","I learn if my company asks me to","I regularly try to learn something new","I actively look for skills that make me better at work"]],
+["When I finish my assigned work early, I…",["Wait for the day to end","Take a break","Check whether anything else needs attention","Proactively find something valuable to improve"]],
+["When there is a difficult workplace problem, I…",["Avoid getting involved","Wait for someone else to solve it","Try to find a solution","Bring possible solutions—not just the problem"]],
+["My relationship with deadlines is…",["I frequently miss them","I sometimes need reminders","I usually meet them","I consistently meet them and often finish ahead of time"]],
+["When my company introduces a new system or process, I…",["Resist the change","Use it because I have to","Learn how to use it","Learn it quickly and help others adapt"]]
+];
+let current=0,score=0,selected=null;
+
+function startQuiz(){document.getElementById("intro").classList.add("hidden");document.getElementById("quiz").classList.remove("hidden");render();}
+function render(){
+ selected=null;
+ const q=questions[current];
+ document.getElementById("counter").textContent=`Question ${current+1} of ${questions.length}`;
+ document.getElementById("points").textContent=`${score} points`;
+ document.getElementById("progress").style.width=((current)/questions.length*100)+"%";
+ document.getElementById("question").textContent=q[0];
+ const box=document.getElementById("options");box.innerHTML="";
+ q[1].forEach((text,i)=>{
+   const b=document.createElement("button");b.className="option";
+   b.innerHTML=`<span class="letter">${String.fromCharCode(65+i)}</span><span>${text}</span>`;
+   b.onclick=()=>choose(i,b);box.appendChild(b);
+ });
+ document.getElementById("next").style.display="none";
+}
+function choose(i,b){
+ selected=i+1;
+ document.querySelectorAll(".option").forEach(x=>{x.disabled=true;x.style.opacity=".65"});
+ b.style.borderColor="#5b4bdb";b.style.background="#faf9ff";b.style.opacity="1";
+ document.getElementById("next").style.display="block";
+}
+function nextQuestion(){
+ if(!selected)return;
+ score+=selected;
+ current++;
+ if(current<questions.length) render(); else showResult();
+}
+function showResult(){
+ document.getElementById("quiz").classList.add("hidden");document.getElementById("result").classList.remove("hidden");
+ document.getElementById("finalScore").textContent=score;
+ document.getElementById("meter").style.width=(score/40*100)+"%";
+ let v,e,d,t;
+ if(score<=19){v="NEEDS IMPROVEMENT";e="🔴";d="There are a few workplace habits you could strengthen. The good news: small, consistent changes can make a noticeable difference.";t="<b>Your challenge:</b><br>Choose one habit from the quiz and improve it over the next 30 days."}
+ else if(score<=27){v="AVERAGE PERFORMER";e="🟠";d="You have a solid foundation, but there is room to become more proactive, consistent and ownership-driven.";t="<b>Your challenge:</b><br>Move one answer from 'average' to 'good' and build the habit."}
+ else if(score<=34){v="GOOD PERFORMER";e="🟢";d="You demonstrate dependable workplace habits and a positive approach to responsibility, teamwork and learning.";t="<b>Your challenge:</b><br>Focus on initiative—look for ways to create value beyond your assigned tasks."}
+ else{v="OUTSTANDING PERFORMER";e="🏆";d="Your answers suggest strong ownership, reliability, initiative and a growth mindset. Keep the balance between performance and people.";t="<b>Your challenge:</b><br>Help others grow while continuing to raise your own standard."}
+ document.getElementById("emoji").textContent=e;document.getElementById("verdict").textContent=v;document.getElementById("description").textContent=d;document.getElementById("tips").innerHTML=t;
+}
+function restart(){current=0;score=0;document.getElementById("result").classList.add("hidden");document.getElementById("quiz").classList.remove("hidden");render();}
+function shareResult(){
+ const text=`I scored ${score}/40 in the ⚖️ HR Courtroom Challenge — "${document.getElementById("verdict").textContent}"! What would you score?`;
+ if(navigator.share){navigator.share({title:"HR Courtroom Challenge",text:text,url:location.href}).catch(()=>{});}
+ else{navigator.clipboard.writeText(text+" "+location.href);alert("Your result text and quiz link have been copied. Paste them into LinkedIn!");}
+}
+</script>
+</body>
+</html>
